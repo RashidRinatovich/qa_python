@@ -1,24 +1,94 @@
+import pytest
 from main import BooksCollector
 
-# класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
-# обязательно указывать префикс Test
 class TestBooksCollector:
+    
+    # 1)Негативная проверка на метод add_new_book
 
-    # пример теста:
-    # обязательно указывать префикс test_
-    # дальше идет название метода, который тестируем add_new_book_
-    # затем, что тестируем add_two_books - добавление двух книг
-    def test_add_new_book_add_two_books(self):
-        # создаем экземпляр (объект) класса BooksCollector
-        collector = BooksCollector()
+    def test_add_new_book_same_book_not_added_twice(self, collection):
+        
+        collection.add_new_book('Гордость и предубеждение и зомби')
+        collection.add_new_book('Гордость и предубеждение и зомби')
 
-        # добавляем две книги
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Что делать, если ваш кот хочет вас убить')
+        # проверяем, что у нас осталась только одна книга
+        assert len(collection.get_books_genre()) == 1
+        assert 'Гордость и предубеждение и зомби' in collection.get_books_genre()
 
-        # проверяем, что добавилось именно две
-        # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-        assert len(collector.get_books_rating()) == 2
+    # 2) Позитивная проверка на метод add_new_book
+    @pytest.mark.parametrize('valid_len_book',  
+        ['A' * 2,
+         'A' * 40,
+        'A' * 20])
+    
+    def test_add_new_book_add_book_with_valid_len(self, collection, valid_len_book):
+        collection.add_new_book(valid_len_book)    
+        assert valid_len_book in collection.get_books_genre() 
+         
+    # 3) Позитивная проверка на метод set_book_genre
+          
+    def test_set_book_genre_correct_genre_successful(self, collection):
+        collection.add_new_book('Пуаро')
+        collection.set_book_genre('Пуаро', 'Детективы')
+        assert collection.get_book_genre('Пуаро') == 'Детективы'
+        
+    # 4) Позитивная проверка на метод get_book_genre
+    
+    def test_get_book_genre_correct_genre_by_book_title(self, collection):
+        collection.books_genre = {'Недоросль': 'Комедии'} 
+        assert collection.get_book_genre('Недоросль') == 'Комедии'
+        
+    # 5) Позитивная проверка на метод get_books_with_correct_genre
+    
+    def test_get_books_with_specific_genre_get_book_with_correct_genre(self, collection):
+        collection.books_genre = {
+            'Гарри Поттер': 'Фантастика',
+            'Властелин колец': 'Фантастика',
+            'Недоросль': 'Комедии',
+            'Горе от ума':'Комедии'
+        }
+        assert collection.get_books_with_specific_genre('Комедии') == ['Недоросль', 'Горе от ума']
+        
+    # 6) Позитивная проверка на метод get_books_for_chilren
+    
+    def test_get_books_for_children_successful(self, collection):
+        collection.books_genre = {
+            'Джуманджи': 'Фантастика',
+            'Ну, погоди': 'Мультфильмы',
+            'Война миров': 'Ужасы'
+        }                            
+        assert collection.get_books_for_children() == ['Джуманджи', 'Ну, погоди']
+        
+    # 7) Негативная проверка на метод get_books_for_children
+    
+    def test_get_books_for_children_when_book_has_no_genre(self, collection):
+        collection.add_new_book('Звездные войны')
+        assert collection.get_books_for_children() == []
+    
+    # 8) Позитивная проверка на метод add_book_in_favorites
+    
+    def test_add_book_in_favorites_added_successful(self, collection):
+        collection.add_new_book('Властелин колец')
+        collection.add_book_in_favorites('Властелин колец')
+        assert collection.get_list_of_favorites_books() == ['Властелин колец']
 
-    # напиши свои тесты ниже
-    # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+    # 9) Негативная проверка на метод add_book_in_favorites
+    
+    def test_add_book_in_favorites_not_added_twice(self, collection):
+        collection.add_new_book('Властелин колец')
+        collection.add_book_in_favorites('Властелин колец')
+        collection.add_book_in_favorites('Властелин колец')
+        assert collection.get_list_of_favorites_books() == ['Властелин колец']
+
+    # 10) Позитивная проверка на метод delete_book_from_favorites
+    
+    def test_delete_book_from_favorites_successful_deleted(self, collection):
+        collection.add_new_book('Буратино')
+        collection.add_book_in_favorites('Буратино')
+        collection.delete_book_from_favorites('Буратино')
+        assert collection.get_list_of_favorites_books() == []
+        
+    # 11) Позитивная проверка на метод get_list_of_favorites_books
+    
+    def test_get_list_of_favorites_books_successful(self, collection):
+        collection.favorites = ['Гарри Поттер', 'Властелин колец', 'Буратино']
+        assert collection.get_list_of_favorites_books() == ['Гарри Поттер', 'Властелин колец', 'Буратино']
