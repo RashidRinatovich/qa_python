@@ -23,6 +23,13 @@ class TestBooksCollector:
     def test_add_new_book_add_book_with_valid_len(self, collection, valid_len_book):
         collection.add_new_book(valid_len_book)    
         assert valid_len_book in collection.get_books_genre() 
+        
+    # 3) Негативная проверка на метод add_new_book
+    @pytest.mark.parametrize('invalid_len_book', ['', 'A' * 41, 'A' * 90])
+    
+    def test_add_new_book_with_invalid_len(self, collection, invalid_len_book):
+        collection.add_new_book(invalid_len_book)
+        assert invalid_len_book not in collection.get_books_genre()
          
     # 3) Позитивная проверка на метод set_book_genre
           
